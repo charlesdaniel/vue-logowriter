@@ -30,10 +30,13 @@ export default {
                 [ 'repeat N [ CMDS ]', 'Repeat the CMDS sequence N times. CMDS are valid movements.' ],
                 [ 'setbg C', 'Set the background color to C' ],
                 [ 'setc C', '(or setpencolor or pc) Set the pen color to C. C can be a number 0..7 or #rgb or string like "black"'],
+                [ 'setsh T', 'Set the turtle\'s shape to T. T can be either 0 or 1'],
                 [ 'setpos [X Y]', 'Set the absolute position of the turtle to X,Y'],
                 [ 'seth D', '(or setangle) Set the turtle\'s absolute angle to D degrees'],
                 [ 'ht', '(or hideturtle) Hide the turtle'],
                 [ 'st', '(or showturtle) Show the turtle'],
+                [ 'hg', '(or hideguide) Hide guidelines around turtle'],
+                [ 'sg', '(or showguide) Show guidelines around turtle'],
             ]
         }
     },

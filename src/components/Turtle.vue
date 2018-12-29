@@ -2,8 +2,13 @@
 <div>
   <svg ref="svg" :style="{backgroundColor: backgroundColor}">
     <g :transform="transforms">
+      <path :transform="turtleTransforms" v-if="turtle.showGuide" opacity="0.5" stroke-dasharray="5 5" d="M 0,0 l 100,0 M 0,0 l -100,0 M 0,0 l 0,100 M 0,0 l 0,-100" stroke="gray" strokeWidth="2" />
       <path class="line" :d="path.data" :stroke="path.color" strokeWidth="4" v-for="(path, index) in paths" :key="index" />
-      <path v-if="!turtle.hide" id="turtle" d="M -5,-5 L 0,0 L 5,-5 L 0,10 Z" opacity="0.75" :fill="turtle.penDown ? turtle.penColor : 'none'" stroke="black" strokeWidth="3" :transform="turtleTransforms" />
+      <path v-if="!turtle.hide && !turtle.shape" id="turtle" d="M -5,-5 L 0,0 L 5,-5 L 0,10 Z" opacity="0.75" :fill="turtle.penDown ? turtle.penColor : 'none'" stroke="black" strokeWidth="3" :transform="turtleTransforms" />
+      <g v-if="!turtle.hide && turtle.shape" :transform="turtleTransforms">
+        <image :xlink:href="turtle.shape" transform="translate(-13,0) scale(0.08)" />
+        <circle cx="0" cy="0" r="5" transform="translate(-1, 8)" stroke="black" :fill="turtle.penDown ? turtle.penColor: 'none'" />
+      </g>
     </g>
   </svg>
   <br/>
@@ -35,8 +40,11 @@ export default {
         penDown: true,
         penColor: 'black',
         hide: false,
+        shape: null,
+        showGuide: false,
       },
       colors: ['black', 'silver', 'white', 'red', 'blue', 'yellow', 'green', 'orange'],
+      shapes: [null, 'turtle.svg'],
       _paths: [],
       pathIndex: -1,
       commandIndex: -1,
@@ -167,11 +175,18 @@ export default {
               break
             case 'ht':
             case 'hideturtle':
-              self.turtle.hide = true
-              break
             case 'st':
             case 'showturtle':
-              self.turtle.hide = false
+              self.turtle.hide = (['ht', 'hideturtle'].indexOf(instr) > -1)
+              break
+            case 'setsh':
+              self.turtle.shape = self.shapes[parseInt(nextToken(cmd), 10)||0]
+              break
+            case 'hg':
+            case 'hideguide':
+            case 'sg':
+            case 'showguide':
+              self.turtle.showGuide = (['sg', 'showguide'].indexOf(instr) > -1)
               break
           }
         }
