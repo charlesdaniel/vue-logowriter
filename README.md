@@ -1,4 +1,9 @@
-# vuelogowriter
+# Vue-LogoWriter
+#### by Charles Daniel
+
+A minimal LogoWriter clone written with VueJS and SVG.
+
+Demo: [https://charlesdaniel.github.io/vue-logowriter/](https://charlesdaniel.github.io/vue-logowriter/)
 
 ## Project setup
 ```
@@ -14,16 +19,3 @@ npm run serve
 ```
 npm run build
 ```
-
-### Run your tests
-```
-npm run test
-```
-
-### Lints and fixes files
-```
-npm run lint
-```
-
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
