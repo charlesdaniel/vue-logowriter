@@ -25,7 +25,7 @@ export default {
     },
     value: {
       type: Array,
-      default: [],
+      default: () => [],
     },
   },
   data() {
@@ -45,7 +45,7 @@ export default {
       },
       colors: ['black', 'silver', 'white', 'red', 'blue', 'yellow', 'green', 'orange'],
       shapes: [null, 'turtle.svg'],
-      _paths: [],
+      pathsArray: [],
       pathIndex: -1,
       commandIndex: -1,
     }
@@ -78,15 +78,15 @@ export default {
     },
     paths() {
       let self = this
-      if (! self._paths) {
-        self._paths = [{ color: 'black', data: `M 0,0 ` }]
+      if (! self.pathsArray) {
+        self.pathsArray = [{ color: 'black', data: `M 0,0 ` }]
         self.pathIndex = 0
       }
 
       // TODO: This parser is waaay too hacky and brittle. Need to rewrite.
       function nextToken(cmd) {
         let str
-        while(str = cmd.shift()) {
+        while(str = cmd.shift()) {  // eslint-disable-line no-cond-assign
           str = str.replace('[', '').replace(']', '').replace(' ', '').replace('=', '')
           if(str) {
             return str
@@ -96,9 +96,8 @@ export default {
       function processCommand(cmd) {
         cmd = cmd.slice(0)
         let instr
-        let vars = {}
 
-        while (instr = nextToken(cmd)) {
+        while (instr = nextToken(cmd)) {  // eslint-disable-line no-cond-assign
           switch(instr.toLowerCase()) {
             case 'pu':
               self.turtle.penDown = false
@@ -114,38 +113,40 @@ export default {
               self.turtle.angle -= parseFloat(nextToken(cmd))
               self.turtle.angle %= 360.0
               break
-            case 'fd':
+            case 'fd': {
               let fd_length = nextToken(cmd)
               self.turtle.x += Math.cos(self.toRad(self.turtle.angle)) * parseFloat(fd_length)
               self.turtle.y += Math.sin(self.toRad(self.turtle.angle)) * parseFloat(fd_length)
-              self._paths[self.pathIndex]['data'] += (self.turtle.penDown ? ` L ${self.turtle.x},${self.turtle.y}` : ` M ${self.turtle.x},${self.turtle.y}`)
+              self.pathsArray[self.pathIndex]['data'] += (self.turtle.penDown ? ` L ${self.turtle.x},${self.turtle.y}` : ` M ${self.turtle.x},${self.turtle.y}`)
               break
-            case 'bk':
+            }
+            case 'bk': {
               let bk_length = nextToken(cmd)
               self.turtle.x -= Math.cos(self.toRad(self.turtle.angle)) * parseFloat(bk_length)
               self.turtle.y -= Math.sin(self.toRad(self.turtle.angle)) * parseFloat(bk_length)
-              self._paths[self.pathIndex]['data'] += (self.turtle.penDown ? ` L ${self.turtle.x},${self.turtle.y}` : ` M ${self.turtle.x},${self.turtle.y}`)
-              break
+              self.pathsArray[self.pathIndex]['data'] += (self.turtle.penDown ? ` L ${self.turtle.x},${self.turtle.y}` : ` M ${self.turtle.x},${self.turtle.y}`)
+              break              
+            }
             case 'cs':
             case 'clear':
-              self._paths = [{ color: 'black', data: 'M 0,0 ' }]
+              self.pathsArray = [{ color: 'black', data: 'M 0,0 ' }]
               self.$emit('input', [])
               self.commandIndex = -1
               self.turtle.x = 0
               self.turtle.y = 0
               self.turtle.angle = 0.0
               self.turtle.penDown = true
-              self.pathIndex = self._paths.length - 1
+              self.pathIndex = self.pathsArray.length - 1
               break
             case 'home':
               self.turtle.x = 0
               self.turtle.y = 0
               self.turtle.angle = 0.0
               self.turtle.penDown = true
-              self._paths.push({ color: self.turtle.penColor, data: 'M 0,0' })
-              self.pathIndex = self._paths.length - 1
+              self.pathsArray.push({ color: self.turtle.penColor, data: 'M 0,0' })
+              self.pathIndex = self.pathsArray.length - 1
               break
-            case 'repeat':
+            case 'repeat': {
               const iterations = parseInt(nextToken(cmd), 10)
               cmd[0] = cmd[0].replace('[', '')
               cmd[cmd.length - 1] = cmd[cmd.length - 1].replace(']', '')
@@ -153,6 +154,8 @@ export default {
                 processCommand(cmd)
               }
               break
+            }
+
             case 'setbg':
               self.backgroundColor = self.getColor(nextToken(cmd))
               break
@@ -160,15 +163,16 @@ export default {
             case 'setc':
             case 'setpencolor':
               self.turtle.penColor = self.getColor(nextToken(cmd))
-              self._paths.push({ color: self.turtle.penColor, data: `M ${self.turtle.x},${self.turtle.y}` })
-              self.pathIndex = self._paths.length - 1
+              self.pathsArray.push({ color: self.turtle.penColor, data: `M ${self.turtle.x},${self.turtle.y}` })
+              self.pathIndex = self.pathsArray.length - 1
               break
-            case 'setpos':
+            case 'setpos': {
               let newX = nextToken(cmd)
               let newY = nextToken(cmd)
               self.turtle.x = parseInt(newX, 10)
               self.turtle.y = parseInt(newY, 10)
               break
+            }
             case 'seth':
             case 'setangle':
               self.turtle.angle = parseFloat(nextToken(cmd))
@@ -194,12 +198,12 @@ export default {
 
       for(let i=this.commandIndex+1; i<this.value.length; i++) {
         if(this.value[i]) {
-          this.commandIndex = i
-          const cmd = String(this.value[i]).split(/[^\#\w\d]+/)
+          this.commandIndex = i // eslint-disable-line vue/no-side-effects-in-computed-properties
+          const cmd = String(this.value[i]).split(/[^#\w\d]+/)
           processCommand(cmd)
         }
       }
-      return self._paths
+      return self.pathsArray
     }
   },
   mounted() {
